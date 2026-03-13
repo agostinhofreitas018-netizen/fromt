@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CODIFY</title>
+    <link rel="stylesheet" href="Style.css">
+</head>
+
+<body>
+    <div class="auth-container">
+        <h1>Login</h1>
+        <form id="loginForm">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="seu@gmail.com" required>
+
+            <label for="password">Senha</label>
+            <input type="password" id="password" name="password" placeholder="********" required>
+
+            <button type="submit">Entrar</button>
+        </form>
+        <p>Não tem conta? <a href="registro.html">Registre-se</a></p>
+        <div id="errorMessage" style="color: red; display: none;"></div>
+    </div>
+    <script src="api.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const data = await api.login(email, password);
+
+                if (data.success) {
+                    api.setToken(data.data.token, data.data.user);
+                    window.location.href = 'dashboard.html';
+                } else {
+                    document.getElementById('errorMessage').textContent = data.error.message;
+                    document.getElementById('errorMessage').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = 'Erro de conexão';
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

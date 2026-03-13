@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil - CODIFY</title>
+    <link rel="stylesheet" href="Pessoal.css">
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <h2>Menu</h2>
+        <div class="logo">CODIFY</div>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="cursos/html/index.html">HTML</a></li>
+            <li><a href="cursos/css/index.html">CSS</a></li>
+            <li><a href="cursos/javascript/index.html">JavaScript</a></li>
+            <li><a href="perfil.html">Perfil</a></li>
+            <li><a href="index.html" id="logout">Logout</a></li>
+        </ul>
+    </aside>
+
+    <main class="profile-content">
+        <div class="profile-header">
+            <div class="user-photo">
+                <img id="userImage" src="images/default-user.png" alt="Foto do Usuário">
+                <input type="file" id="uploadImage" accept="image/*">
+            </div>
+            <div class="user-info">
+                <h1 id="userName">Usuário</h1>
+                <p id="userEmail">usuario@email.com</p>
+            </div>
+        </div>
+
+        <section class="user-bio">
+            <h2>Biografia</h2>
+            <textarea id="userBio" placeholder="Escreva sua bio aqui..."></textarea>
+            <button id="saveBio">Salvar Bio</button>
+        </section>
+
+        <section class="user-progress">
+            <h2>Progresso nos Cursos</h2>
+            <div class="progress-item">
+                <label>HTML</label>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressHTMLFill" style="width: 0%"></div>
+                    <span class="progress-text" id="progressHTMLText">0%</span>
+                </div>
+            </div>
+            <div class="progress-item">
+                <label>CSS</label>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressCSSFill" style="width: 0%"></div>
+                    <span class="progress-text" id="progressCSSText">0%</span>
+                </div>
+            </div>
+            <div class="progress-item">
+                <label>JavaScript</label>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressJSFill" style="width: 0%"></div>
+                    <span class="progress-text" id="progressJSText">0%</span>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="api.js"></script>
+    <script>
+        if (!api.token) {
+            window.location.href = 'login.html';
+        }
+
+        const user = JSON.parse(localStorage.getItem('user'));
+
+        async function loadProfile() {
+            try {
+                const data = await api.getProfile(user.id);
+
+                if (data.success) {
+                    const profile = data.data.user;
+                    document.getElementById('userName').textContent = profile.name;
+                    document.getElementById('userEmail').textContent = profile.email;
+                    document.getElementById('userImage').src = profile.avatar || 'images/default-user.png';
+                    document.getElementById('userBio').value = profile.bio || '';
+                } else {
+                    alert('Erro ao carregar perfil: ' + data.error.message);
+                }
+
+                // Load progress from dashboard
+                const dashData = await api.getDashboard();
+                if (dashData.success) {
+                    const courses = dashData.data.courses;
+                    const htmlProgress = courses.find(c => c.id === 'html')?.progress || 0;
+                    const cssProgress = courses.find(c => c.id === 'css')?.progress || 0;
+                    const jsProgress = courses.find(c => c.id === 'javascript')?.progress || 0;
+                    document.getElementById('progressHTMLFill').style.width = htmlProgress + '%';
+                    document.getElementById('progressHTMLText').textContent = htmlProgress + '%';
+                    document.getElementById('progressCSSFill').style.width = cssProgress + '%';
+                    document.getElementById('progressCSSText').textContent = cssProgress + '%';
+                    document.getElementById('progressJSFill').style.width = jsProgress + '%';
+                    document.getElementById('progressJSText').textContent = jsProgress + '%';
+                }
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+
+        document.getElementById('saveBio').addEventListener('click', async () => {
+            const bio = document.getElementById('userBio').value;
+            const name = document.getElementById('userName').textContent;
+
+            try {
+                const data = await api.updateProfile(user.id, { name, bio });
+
+                if (data.success) {
+                    alert('Perfil atualizado com sucesso');
+                } else {
+                    alert('Erro ao atualizar: ' + data.error.message);
+                }
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        });
+
+        document.getElementById('uploadImage').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    const data = await api.uploadAvatar(user.id, file);
+                    if (data.success) {
+                        document.getElementById('userImage').src = data.data.avatar;
+                        alert('Foto atualizada com sucesso');
+                    } else {
+                        alert('Erro ao atualizar foto: ' + data.error.message);
+                    }
+                } catch (error) {
+                    alert('Erro: ' + error.message);
+                }
+            }
+        });
+
+        loadProfile();
+    </script>
+
+    <script>
+        document.getElementById('logout').addEventListener('click', (e) => {
+            e.preventDefault();
+            api.clearToken();
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+
+</html>

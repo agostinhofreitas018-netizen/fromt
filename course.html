@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso - CODIFY</title>
+    <link rel="stylesheet" href="Pessoal.css">
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <h2>Menu</h2>
+        <div class="logo">CODIFY</div>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="cursos/html/index.html">HTML</a></li>
+            <li><a href="cursos/css/index.html">CSS</a></li>
+            <li><a href="cursos/javascript/index.html">JavaScript</a></li>
+            <li><a href="perfil.html">Perfil</a></li>
+            <li><a href="index.html" id="logout">Logout</a></li>
+        </ul>
+    </aside>
+
+    <main class="course-content">
+        <button id="backBtn">Voltar ao Dashboard</button>
+        <h1 id="courseTitle">Carregando...</h1>
+        <div id="courseModules"></div>
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+        if (!api.token) {
+            window.location.href = 'login.html';
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('courseId');
+
+        async function loadCourse() {
+            try {
+                const data = await api.getCourse(courseId);
+
+                if (data.success) {
+                    const course = data.data;
+                    document.getElementById('courseTitle').textContent = course.title;
+                    const modulesDiv = document.getElementById('courseModules');
+                    course.modules.forEach(module => {
+                        const moduleDiv = document.createElement('div');
+                        moduleDiv.className = 'module';
+
+                        const titleEl = document.createElement('h2');
+                        titleEl.textContent = module.title;
+
+                        const descEl = document.createElement('p');
+                        descEl.textContent = module.description;
+
+                        const list = document.createElement('ul');
+                        list.className = 'lessons-list';
+
+                        (module.lessons || []).forEach(lesson => {
+                            const li = document.createElement('li');
+                            const link = document.createElement('a');
+                            link.href = '#';
+                            link.textContent = lesson.title + (lesson.completed ? ' (Completo)' : '');
+                            link.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                openLesson(lesson.id, lesson.title);
+                            });
+                            li.appendChild(link);
+                            list.appendChild(li);
+                        });
+
+                        moduleDiv.appendChild(titleEl);
+                        moduleDiv.appendChild(descEl);
+                        moduleDiv.appendChild(list);
+                        modulesDiv.appendChild(moduleDiv);
+                    });
+                } else {
+                    alert('Erro: ' + data.error.message);
+                }
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+
+        function openLesson(lessonId, title) {
+            const cleanId = lessonId.replace('les_', '');
+            window.location.href = `lesson.html?lessonId=${cleanId}`;
+        }
+
+        loadCourse();
+
+        document.getElementById('backBtn').addEventListener('click', () => {
+            window.location.href = 'dashboard.html';
+        });
+    </script>
+
+    <script>
+        document.getElementById('logout').addEventListener('click', (e) => {
+            e.preventDefault();
+            api.clearToken();
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+
+</html>

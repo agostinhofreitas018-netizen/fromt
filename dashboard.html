@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CODIFY</title>
+    <link rel="stylesheet" href="Pessoal.css">
+</head>
+
+<body>
+
+    <nav class="topbar">
+        <button id="toggleSidebar" class="icon-btn" aria-label="Toggle menu">☰</button>
+        <div class="topbar-title">CODIFY</div>
+        <div class="topbar-actions">
+            <button id="logout" class="icon-btn" aria-label="Logout">⏻</button>
+        </div>
+    </nav>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">CODIFY</div>
+            <button id="closeSidebar" class="icon-btn" aria-label="Fechar menu">✕</button>
+        </div>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="cursos/html/index.html">HTML</a></li>
+            <li><a href="cursos/css/index.html">CSS</a></li>
+            <li><a href="cursos/javascript/index.html">JavaScript</a></li>
+            <li><a href="perfil.html">Perfil</a></li>
+        </ul>
+    </aside>
+
+    <div id="preloader" class="preloader">
+        <div class="spinner"></div>
+        <div class="preloader-text">Carregando painel...</div>
+    </div>
+
+    <main class="dashboard-content">
+        <header class="dashboard-header">
+            <h1>Bem-vindo, <span id="userName">Usuário</span>!</h1>
+            <div class="dashboard-welcome">Aqui estão seus cursos e progresso.</div>
+        </header>
+
+        <section class="progress-overview">
+            <h2>Seu Progresso</h2>
+            <div id="progressStats" class="progress-grid">
+                <div class="progress-card">
+                    <span class="progress-title">Cursos em andamento</span>
+                    <span class="progress-value" id="coursesInProgress">0</span>
+                </div>
+                <div class="progress-card">
+                    <span class="progress-title">Cursos completados</span>
+                    <span class="progress-value" id="completedCourses">0</span>
+                </div>
+                <div class="progress-card">
+                    <span class="progress-title">Lições assistidas</span>
+                    <span class="progress-value" id="totalLessons">0</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="course-cards">
+            <div class="section-header">
+                <h2>Cursos Disponíveis</h2>
+                <span class="section-subtitle">Clique em um curso para continuar aprendendo.</span>
+            </div>
+            <div id="courseList"></div>
+        </section>
+    </main>
+    <script src="api.js"></script>
+    <script>
+        if (!api.token) {
+            window.location.href = 'login.html';
+        }
+
+        const sidebar = document.getElementById('sidebar');
+        const preloader = document.getElementById('preloader');
+
+        function showPreloader(show) {
+            preloader.style.display = show ? 'flex' : 'none';
+        }
+
+        document.getElementById('toggleSidebar').addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
+        document.getElementById('closeSidebar').addEventListener('click', () => {
+            sidebar.classList.add('collapsed');
+        });
+
+        document.getElementById('logout').addEventListener('click', (e) => {
+            e.preventDefault();
+            api.clearToken();
+            window.location.href = 'index.html';
+        });
+
+        async function loadDashboard() {
+            try {
+                showPreloader(true);
+                const data = await api.getDashboard();
+                showPreloader(false);
+
+                if (data.success) {
+                    const user = data.data.user;
+                    document.getElementById('userName').textContent = user.name;
+
+                    const progress = data.data.progress;
+                    document.getElementById('coursesInProgress').textContent = progress.coursesInProgress;
+                    document.getElementById('completedCourses').textContent = progress.completedCourses;
+                    document.getElementById('totalLessons').textContent = progress.totalLessonsWatched;
+
+                    const courseList = document.getElementById('courseList');
+                    courseList.innerHTML = '';
+
+                    data.data.courses.forEach(course => {
+                        const courseDiv = document.createElement('div');
+                        courseDiv.className = 'card course-card';
+                        courseDiv.innerHTML = `
+                            <h3>${course.title}</h3>
+                            <p>${course.description}</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${course.progress}%"></div>
+                                <span class="progress-text">${course.progress}%</span>
+                            </div>
+                            <button onclick="openCourse('${course.id}')">Continuar</button>
+                        `;
+                        courseList.appendChild(courseDiv);
+                    });
+                } else {
+                    alert('Erro ao carregar dashboard: ' + data.error.message);
+                }
+            } catch (error) {
+                showPreloader(false);
+                alert('Erro: ' + error.message);
+            }
+        }
+
+        function openCourse(courseId) {
+            window.location.href = `course.html?courseId=${courseId}`;
+        }
+
+        loadDashboard();
+    </script>
+</body>
+
+</html>

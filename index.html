@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CODIFY - Aprenda Desenvolvimento Web</title>
+    <link rel="stylesheet" href="Style.css">
+</head>
+
+<body>
+    <!-- Header / Navbar -->
+    <header class="header">
+        <nav class="navbar-container">
+            <div class="logo">CODIFY</div>
+            <ul class="nav-links">
+                <li><a href="#">Home</a></li>
+                <li><a href="#courses">Cursos</a></li>
+                <li><a href="#about">Sobre</a></li>
+                <li><a href="#contact">Contato</a></li>
+                <li><a href="login.html">Entrar</a></li>
+                <li><a href="registro.html">Começar</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <p class="tag">PLATAFORMA DE APRENDIZADO</p>
+            <h1>
+                Domine o Desenvolvimento Web <br><span class="gradient-text">com Excelência Técnica</span>
+            </h1>
+            <p class="hero-text">
+                Aprenda HTML, CSS e JavaScript com aulas práticas, explicações claras e exercícios reais.
+            </p>
+            <div class="hero-buttons">
+                <a href="#courses" class="btn-primary">Explorar Cursos</a>
+                <a href="#" class="btn-secondary">Assistir Demo</a>
+            </div>
+        </div>
+    </section>
+
+    
+    <section class="features container">
+        <div class="feature-card">
+            <h3>Aprenda Online</h3>
+            <p>Cursos de programação acessíveis de qualquer lugar.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Teoria + Prática</h3>
+            <p>Cada aula possui explicação e exemplos reais.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Acompanhe o seu progresso</h3>
+            <p>Veja sua evolução dentro da plataforma.</p>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about container" id="about">
+        <div class="about-text">
+            <h2>Bem-vindo à CODIFY</h2>
+            <p>
+                A CODIFY é uma plataforma criada para ajudar estudantes a aprender desenvolvimento web do zero.
+            </p>
+            <p>
+                Aqui você encontrará cursos organizados de HTML, CSS e JavaScript com exemplos práticos.
+            </p>
+            <a href="#" class="btn-start">Ver detalhes</a>
+        </div>
+    </section>
+
+    <!-- Courses Section -->
+    <section class="courses" id="courses">
+        <h2>Nossos Cursos</h2>
+        <div id="courseList">
+            
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <h3>CODIFY</h3>
+        <p>Plataforma educacional para aprender desenvolvimento web.</p>
+    </footer>
+
+    <script src="api.js"></script>
+    <script>
+        async function loadCategories() {
+            try {
+                const data = await api.getCategories();
+                if (data.success) {
+                    const courseList = document.getElementById('courseList');
+                    data.data.categories.forEach(category => {
+                        const article = document.createElement('article');
+                        article.className = 'course-card';
+                        article.innerHTML = `
+                            <h3>${category.name}</h3>
+                            <p>${category.description}</p>
+                            <p>${category.totalCourses} cursos disponíveis</p>
+                            <a href="login.html" class="btn-course">Explorar</a>
+                        `;
+                        courseList.appendChild(article);
+                    });
+                }
+            } catch (error) {
+                // Fallback to static if API fails
+                document.getElementById('courseList').innerHTML = `
+                    <article class="course-card">
+                        <h3>HTML</h3>
+                        <p>Aprenda a estrutura da Web.</p>
+                        <a href="login.html" class="btn-course">Começar Curso</a>
+                    </article>
+                    <article class="course-card">
+                        <h3>CSS</h3>
+                        <p>Aprenda a estilizar páginas Web.</p>
+                        <a href="login.html" class="btn-course">Começar Curso</a>
+                    </article>
+                    <article class="course-card">
+                        <h3>JavaScript</h3>
+                        <p>Crie interações na Web.</p>
+                        <a href="login.html" class="btn-course">Começar Curso</a>
+                    </article>
+                `;
+            }
+        }
+
+        loadCategories();
+    </script>
+</body>
+
+</html>

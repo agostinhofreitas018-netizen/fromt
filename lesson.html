@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lição - CODIFY</title>
+    <link rel="stylesheet" href="Pessoal.css">
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <h2>Menu</h2>
+        <div class="logo">CODIFY</div>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="cursos/html/index.html">HTML</a></li>
+            <li><a href="cursos/css/index.html">CSS</a></li>
+            <li><a href="cursos/javascript/index.html">JavaScript</a></li>
+            <li><a href="perfil.html">Perfil</a></li>
+            <li><a href="index.html" id="logout">Logout</a></li>
+        </ul>
+    </aside>
+
+    <main class="course-content">
+        <button id="backBtn">Voltar ao Curso</button>
+        <h1 id="lessonTitle">Carregando...</h1>
+        <div id="lessonContent" class="lesson-content"></div>
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+        if (!api.token) {
+            window.location.href = 'login.html';
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const lessonId = urlParams.get('lessonId');
+
+        function renderMarkdown(text) {
+            // render simples de Markdown (suporta #, **, *, links e listas)
+            let html = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            // code blocks
+            html = html.replace(/```([\s\S]*?)```/g, (m, code) => {
+                return `<pre class="code-block"><code>${code}</code></pre>`;
+            });
+
+            // headings
+            html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
+
+            // bold/italic
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+            // links
+            html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+            // lists
+            html = html.replace(/^\s*\- (.*)$/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>)(\s*<li>.*<\/li>)+/g, (m) => `<ul>${m}</ul>`);
+
+            // paragraphs
+            html = html.replace(/^(?!<h|<ul|<li|<pre|<a)([^\n]+)$/gm, '<p>$1</p>');
+
+            return html;
+        }
+
+        async function loadLesson() {
+            try {
+                const data = await api.getLesson(lessonId);
+
+                if (data.success) {
+                    const lesson = data.data;
+                    document.getElementById('lessonTitle').textContent = lesson.title;
+                    document.getElementById('lessonContent').innerHTML = renderMarkdown(lesson.content || '');
+                } else {
+                    document.getElementById('lessonTitle').textContent = 'Erro ao carregar lição';
+                    document.getElementById('lessonContent').textContent = data.error?.message || 'Conteúdo indisponível';
+                }
+            } catch (error) {
+                document.getElementById('lessonTitle').textContent = 'Erro de conexão';
+                document.getElementById('lessonContent').textContent = error.message;
+            }
+        }
+
+        loadLesson();
+
+        document.getElementById('backBtn').addEventListener('click', () => {
+            window.history.back();
+        });
+
+        document.getElementById('logout').addEventListener('click', (e) => {
+            e.preventDefault();
+            api.clearToken();
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+
+</html>
