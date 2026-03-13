@@ -1,4 +1,4 @@
-const API_BASE = 'https://d704-102-214-36-169.ngrok-free.app';
+const API_BASE = 'https://angel-back-ongr.onrender.com';
 
 class Api {
     constructor() {
@@ -96,5 +96,6 @@ class Api {
         localStorage.setItem('user', JSON.stringify(user));
     }
 }
+
 
 const api = new Api();
