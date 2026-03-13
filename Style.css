@@ -36,6 +36,7 @@ body::before {
 }
 
 .nav {
+    display:flex;
     max-width: 1200px;
     margin: auto;
     display: flex;
@@ -43,6 +44,14 @@ body::before {
     align-items: center;
     padding: 20px;
 }
+
+.navbar-container{
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+    padding:20px;
+}
+
 
 .logo {
     font-size: 22px;
@@ -366,3 +375,4 @@ body::before {
 
 
 }
+
