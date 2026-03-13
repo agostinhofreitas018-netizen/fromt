@@ -73,6 +73,7 @@ body::before {
 }
 
 .btn-start {
+    Position:absolute;
     background: linear-gradient(45deg, #6c63ff, #8b5cf6);
     padding: 10px 22px;
     border-radius: 30px;
@@ -362,5 +363,6 @@ body::before {
     .about {
         grid-template-columns: 1fr;
     }
+
 
 }
