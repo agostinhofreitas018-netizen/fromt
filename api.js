@@ -1,4 +1,4 @@
-const API_BASE = 'https://angel-back-ongr.onrender.com';
+const API_BASE = 'https://d704-102-214-36-169.ngrok-free.app';
 
 class Api {
     constructor() {
@@ -99,3 +99,4 @@ class Api {
 
 
 const api = new Api();
+
